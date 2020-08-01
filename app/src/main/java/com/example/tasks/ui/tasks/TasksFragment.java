@@ -1,53 +1,85 @@
 package com.example.tasks.ui.tasks;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tasks.Content;
-import com.example.tasks.ContentAdapter;
+import com.example.tasks.MainActivity;
 import com.example.tasks.R;
+import com.example.tasks.datapersistant.tasks.Task;
+import com.example.tasks.datapersistant.tasks.TaskAdapter;
+import com.example.tasks.datapersistant.tasks.TaskViewModel;
+import com.example.tasks.tasksLoader.TaskLoaderThread;
+import com.example.tasks.ui.ItemsFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TasksFragment extends Fragment {
 
-    private TasksViewModel homeViewModel;
+    private TaskViewModel homeViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         homeViewModel =
-               new ViewModelProvider(this).get(TasksViewModel.class);
+               new ViewModelProvider(this).get(TaskViewModel.class);
         View root = inflater.inflate(R.layout.fragment_tasks, container, false);
 
-        ArrayList<Content> contents = new ArrayList<Content>();
+        List<com.example.tasks.datapersistant.tasks.Task> contents = new ArrayList<Task>();
 
-        for(int i = 0; i < 10;i++){
-            contents.add(new Content("Hello Title",
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam id risus ac nisl dignissim faucibus. Aliquam eget sapien varius, tempus neque eget, sodales lectus. Proin eu ligula eu dui tempor viverra eget in tellus. Fusce placerat et magna non hendrerit. Morbi auctor sed neque eget faucibus. Maecenas fringilla, lacus at placerat sodales, felis tortor elementum nunc, sed lobortis dolor nibh sed augue. Proin pharetra, elit vel viverra commodo, turpis libero cursus lorem, in vehicula risus neque sit amet tortor. Fusce placerat tellus augue, non fringilla metus dictum ut. Sed turpis velit, scelerisque nec tristique nec, aliquam non nibh. Donec varius elit vitae gravida bibendum. Maecenas molestie dapibus lacus sit amet laoreet. Cras in posuere sapien. Proin eleifend leo eget odio tempus, et venenatis dui posuere. Nam porttitor consequat ipsum eget commodo. Vivamus pharetra consectetur tincidunt. Morbi dapibus semper elit vel molestie.",
-                    "Greals","Admin","Telles"
-                    ));
+        SharedPreferences preferences = getActivity().getSharedPreferences("com.example.tasks.Auth", Context.MODE_PRIVATE);
+
+        preferences.getInt("guest_auth" , 0);
+
+        TaskLoaderThread tThread = new TaskLoaderThread(preferences.getString("username","guest"),preferences.getInt("user_id",0));
+
+        tThread.start();
+        try {
+            tThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-//        final TextView textView = root.findViewById(R.id.text_home);
-//        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
 
-        ListView listView = root.findViewById(R.id.tasks_list);
-        ContentAdapter adapter = new ContentAdapter(getActivity(),contents);
-        listView.setAdapter(adapter);
+        contents = tThread.getArrayList();
+
+        for(int i = 0; i < contents.size();i++){
+            homeViewModel.insert(contents.get(i));
+        }
+
+        ListView listView = (ListView)root.findViewById(R.id.task_list);
+        TaskAdapter taskAdapter = new TaskAdapter(getContext(),0,contents);
+        listView.setAdapter(taskAdapter);
+        homeViewModel.getAllTasks().observe(getViewLifecycleOwner(), new Observer<List<Task>>() {
+            @Override
+            public void onChanged(@Nullable final List<Task> tasks) {
+                taskAdapter.addAll(tasks);
+            }
+        });
 
        return root;
     }
+
+    private void changeFragment(ItemsFragment fragment){
+        getParentFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,fragment).addToBackStack(null).commit();
+    }
+
+
 }

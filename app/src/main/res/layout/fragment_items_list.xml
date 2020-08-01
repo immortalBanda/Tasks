@@ -3,11 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:paddingLeft="24dp"
     android:paddingTop="24dp"
     android:paddingRight="24dp"
-    android:paddingBottom="24dp">
+    android:paddingBottom="24dp"
+    android:background="#ffffff">
 
     <ImageView
         android:id="@+id/more_button"
@@ -33,25 +34,18 @@
         android:id="@+id/body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxLines="10"
         android:paddingTop="8dp"
         android:paddingBottom="16dp"
-        android:text="Pacacsscccsac ca  akmcksamcka ckamakmca cka mcasoscmca oamcalsc cao,soc,a cmcsomsoc coa osco,cas caomocoasmca skcaocosmcoma scamosoc a"
+        tools:text="Pacacsscccsac ca  akmcksamcka ckamakmca cka mcasoscmca oamcalsc cao,soc,a cmcsomsoc coa osco,cas caomocoasmca skcaocosmcoma scamosoc a"
         android:textColor="#8A000000"
         android:textSize="18dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
-    <TextView
-        android:id="@+id/author"
+    <include layout="@layout/author_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:maxLines="1"
-        android:text="Author1, Author2. Author3"
-        android:textColor="#00BBC9"
-        android:textSize="20sp"
+        android:id="@+id/author_name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/body" />
 </androidx.constraintlayout.widget.ConstraintLayout>
